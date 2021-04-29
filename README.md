@@ -1,17 +1,19 @@
 # leetcode-problem-picker
 
 ## Original motivation:
-A quick answer to the question “Which leetcode problem should I do next?”
-Randomly choosing from 1750 questions wasn’t cutting it for me.
+A quick answer to the question “Which leetcode problem should I do next?” Because randomly choosing from 1750 questions wasn’t cutting it for me.
 
 ## Possible modes:
-While I was practicing, I found that I had different needs:
-1. Topic focus: e.g. “only graph or DP problems”.
-2. (company) list: e.g. which problems were more frequently asked by companies that I’m interested in?
-3. Level up: (incomplete/WIP)
-User maintains a list of completed/failed problems (and time spent solving) and program determines an approximate “skill range” for each topic (e.g. Hard 24-28% for Trees, Medium 34-45% for dynamic programming) by factoring in each problem’s “acceptance rate”. Then it gives a problem within that range, balancing being challenged with not being discouraged. Idea comes from RPGs.
-4. Improved random (TODO)
-Still random, but adds weight to problems with higher like count (and higher like-dislike ratio) and possibly to problems with lower number.
+Needs that I have discovered so far:
+1. Topic Focus: “only graph or DP problems”.
+2. Filtered Lists: Which problems were frequently asked by companies I’m interested in? Also lists like Blind 75
+3. Level Up (WIP): Determines user's "skill range" for each topic in order to challenge (and not discourage).
+4. Weighted random (TODO): Weighted towards high like count, high like-dislike ratio, etc.
+
+# Uhhhhh nice README but where's the code?
+I personally use this program every time I do leetcode. I wish to share and help others, but what I have is a product of months of ideas. It is neither presentable nor ready for public consumption (i.e. in the way described in this README)
+
+If you are interested in this idea, please star this repo and revisit in a week or so. If this project gathers enough interest, I will have no choice but to dedicate more evenings to this project.
 
 ## Setup:
 ```git clone https://github.com/evliang/leetcode-problem-picker.git```
@@ -71,3 +73,8 @@ Then, from Developer Tools, run
 ```console.log(Array.from(document.querySelectorAll('.reactable-data tr td[label="#"]')).map(x => x.textContent).toString())```
 
 And copy the list into text file
+
+## TODO
+
+1. Refactor what I have. Stay tuned.
+2. Level Up: User maintains a list of attempted problems. Program combines this with each problem’s “acceptance rate” to approximate a “skill range” for each topic (e.g. Hard 24-28% for Trees, Medium 31-45% for graphs).
