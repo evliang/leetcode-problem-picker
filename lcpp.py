@@ -3,6 +3,7 @@ import sys
 import os
 from enum import Enum
 import random
+from constants import topics
 
 ProblemType = Enum('ProblemType', 'Top Freq Easiest Hardest Common Random')
 
