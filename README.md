@@ -1,11 +1,10 @@
 # leetcode-problem-picker
 
-## Original motivation:
-A quick answer to the question "Which leetcode problem should I do next?" Because randomly choosing from 1750 questions wasn’t cutting it for me.
+## Purpose:
+This project was a response to the reoccurring question "Which leetcode problem should I do next?"
 
-## Modes
-The answer to that question depends on different needs and goals:
-1. Topic Focus: Narrow down to just a few subjects e.g. "only problems related to graphs, tries, and DP".
+Over time I found that the answer varies, depending on progress, needs, and goals:
+1. Topic Focus: Narrow down to one or a few subjects e.g. "only problems related to graphs, tries, and DP".
 2. Filtered Lists: Which problems were frequently asked by companies I’m interested in? Also lists like Blind 75
 3. Level Up (WIP): Deduces user's "skill range" for each topic in order to challenge (but not discourage).
 4. Weighted random (TODO): Weighted towards high like count, high like-dislike ratio, etc.
@@ -25,10 +24,10 @@ I wish to share and help others, but what I currently have and use is a product 
 
 ```
 --topic -t          selects from a pool of problems associated with a subject (according to leetcode)
-                    options are: array/arr, string/str, hash/hash table, linked list/ll, math, two-pointers/2ptr, binary search/binsearch, divide and conquer, dp/dynamic programming, backtrack(ing), stack/stk, heap, greedy, sort, bit (manipulation), tree, dfs, bfs, union-find, graph, design, top sort, trie, recursion, queue/q, sliding window
+                    see constants.py for list of options
 --list -l           chooses problems from one or more text files (comma-delimited)
 --count -k          number of problems to get
---interactive -i    interactive mode. Another way to input data (and it auto-populates the date). See section below for more information.
+--interactive -i    interactive mode. Preferred way to input data. See section below for more info.
 note: no topic or list will result in a problem randomly being selected
 ```
 
@@ -60,23 +59,28 @@ LC number           integer. The only required field
 was solved          string. valid inputs: y/n (or yes/no). case insensitive
 time                integer. number of minutes spent on the problem
 date                DateTime. date completed
-num_errs            float. errors made while solving the problem. Float because I differentiate minor from major errors.
+num_errs            float. # mistakes made. Float to differentiate minor from major errors.
 ```
 3. interactive mode: Solve a problem after it is assigned, then record results before getting the next problem. Appends results to completed.csv.
 
-## Information regarding lists:
-Included in this repo are txt files for each topic. Each one is a comma-separated list of problem #s associated with that subject (provided by leetcode).
-Also included are company files. Snatched from a github repo, possibly outdated. See section below if you have leetcode premium and want to keep this info up-to-date.
+## Keeping these lists up-to-date
+constants.py contains list of problem numbers associated for every subject
+Also included are company files. Possibly outdated, came from another repo.
 
-## How to maintain up-to-date lists
-After visiting leetcode in browser, open a page with a problem list (e.g. load up Linked List problems and load All problems in one page)
-Then, from Developer Tools, run
+If you have leetcode premium and want to keep this info up-to-date:
+1. Visit desired problem set e.g. ["Facebook"](https://leetcode.com/company/facebook/)
+2. Display All rows in one page
+3. open up browser's Developer Tools (F12), and from console, run
 
 ```console.log(Array.from(document.querySelectorAll('.reactable-data tr td[label="#"]')).map(x => x.textContent).toString())```
 
-And copy the list into text file
+4. Copy the resulting list into text file
+5. Send PR? :)
 
 ## TODO
 
-1. Refactor what I have. Stay tuned.
-2. Level Up: User maintains a list of attempted problems. Program combines this with each problem’s "acceptance rate" to approximate a "skill range" for each topic (e.g. Hard 24-28% for Trees, Medium 31-45% for graphs).
+1. Clean up and prettify what I have. Stay tuned.
+2. Support multiple ways to handle completed problems
+3. Improve interactive mode
+4. Level Up: User maintains a list of attempted problems. Program combines this with each problem’s "acceptance rate" to approximate a "skill range" for each topic (e.g. Hard 24-28% for Trees, Medium 31-45% for graphs).
+5. Weighted random
