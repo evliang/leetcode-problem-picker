@@ -7,13 +7,14 @@ A quick answer to the question "Which leetcode problem should I do next?" Becaus
 The answer to that question depends on different needs and goals:
 1. Topic Focus: Narrow down to just a few subjects e.g. "only problems related to graphs, tries, and DP".
 2. Filtered Lists: Which problems were frequently asked by companies I’m interested in? Also lists like Blind 75
-3. Level Up (WIP): Determines user's "skill range" for each topic in order to challenge (and not discourage).
+3. Level Up (WIP): Deduces user's "skill range" for each topic in order to challenge (but not discourage).
 4. Weighted random (TODO): Weighted towards high like count, high like-dislike ratio, etc.
 
-# Uhhhhh where's the code?
-I personally use this program every time I do leetcode. I wish to share and help others, but what I have is a product of months of ideas. It is neither presentable nor ready for public consumption (i.e. in the way described in this README)
+# State of leetcode-problem-picker
+![wip](https://liquipedia.net/commons/images/6/63/WIP-logo.png)
+I wish to share and help others, but what I currently have and use is a product of months of ideas. It is neither presentable nor ready for public consumption. What you see now is just a bunch of stubs.
 
-If you are interested in this idea, please star this repo and revisit in a week or so. If this project gathers enough interest, I will have no choice but to dedicate more evenings to this project.
+If you are interested in this idea, please star this repo and give me a week or so to clean it up.
 
 ## Setup:
 ```git clone https://github.com/evliang/leetcode-problem-picker.git```
