@@ -11,7 +11,8 @@ The answer to that question depends on different needs and goals:
 4. Weighted random (TODO): Weighted towards high like count, high like-dislike ratio, etc.
 
 # State of leetcode-problem-picker
-![wip](https://liquipedia.net/commons/images/6/63/WIP-logo.png)
+![wip](https://i.ibb.co/d4Wqrx6/WIP.png)
+
 I wish to share and help others, but what I currently have and use is a product of months of ideas. It is neither presentable nor ready for public consumption. What you see now is just a bunch of stubs.
 
 If you are interested in this idea, please star this repo and give me a week or so to clean it up.
