@@ -9,13 +9,6 @@ Over time I found that the answer varies, depending on progress, needs, and goal
 3. **Level Up** (WIP): Deduces user's "skill range" for each topic in order to challenge (but not discourage).
 4. **Weighted random** (TODO): Weighted towards questions with high like count, greater like/dislike ratio, etc.
 
-# State of leetcode-problem-picker
-![WIP](https://i.ibb.co/BcSX334/WIP.png)
-
-I wish to share and help others, but what I currently have and use is a product of months of ideas. It is neither presentable nor ready for public consumption. In fact, what you see now is just a bunch of stubs.
-
-**If you are interested in this idea, please star this repo** and allow me a week or so to clean up the code and get the first two parts ready.
-
 ## Setup:
 ```git clone https://github.com/evliang/leetcode-problem-picker.git```
 

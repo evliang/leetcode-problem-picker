@@ -87,7 +87,8 @@ if __name__ == "__main__":
         #for company in companies:
         #    d[company] = get_the_question_set(get_frequencies([company]))
 
-        print("Other valid inputs: info, hint, easy, hard, quit, help")
+        valid_inputs = ["info", "hint", "easy", "hard", "quit", "pause", "break"]
+        print(f"Other valid inputs: {', '.join(valid_inputs)}")
         
         for (idx,leetcode_id) in enumerate(problems):
             problem = all_problems[leetcode_id]
@@ -96,8 +97,8 @@ if __name__ == "__main__":
             start_time = timer()
             while True:
                 inp = input('When completed, enter: y/n,[num_errs],[time]\n')
-                if inp == '' or inp.startswith('q'):
-                    break # TODO
+                if inp.startswith('q'):
+                    quit()
                 if inp == 'hint':
                     ret = []
                     # problem # =>
@@ -112,15 +113,24 @@ if __name__ == "__main__":
                     difficulty_string = "medium difficulty" if problem['Difficulty'] == "Medium" else "considered easy" if problem['Difficulty'] == 'Easy' else problem['Difficulty']
                     print(f"{leetcode_id} {problem['Name']} is {difficulty_string}: {problem['Acceptance']} of submissions pass")
                     print(f"{len(company_list)} have asked this question: {', '.join(company_list)}")
+                elif inp == 'pause':
+                    input("Paused. Press Enter to continue the clock\n")
+                elif inp == 'break':
+                    input("Paused. Press Enter to reset the clock and start the problem\n")
+                    start_time = timer()
                 elif inp.startswith('y') or inp.startswith('n'):
+                    # log entry into csv
                     end_time = timer()
                     entry = inp.split(',')
                     was_solved = 'yes' if entry[0].startswith('y') else 'no'
                     num_errs = entry[1] if len(entry) > 1 else '0'
-                    time = entry[2] if len(entry) > 2 else (start_time - end_time)//60
+                    time = entry[2] if len(entry) > 2 else (end_time - start_time)//60
                     with open('completed.csv', 'a') as f:
-                        f.write(f'{leetcode_id},{was_solved},{num_errs},{time},{datetime.datetime.now():%Y-%m-%d}')
-                    # log entry into csv
+                        f.write(f'\n{leetcode_id},{was_solved},{num_errs},{time},{datetime.datetime.now():%Y-%m-%d}')
                     break
+                elif inp == 'help':
+                    #print_help_screen()
+                    print("TODO. For now, read the code or just try it out")
+                    None
                 else:
-                    print("Invalid input. Type help for options")
+                    print(f"Invalid input. Type help for more options")
