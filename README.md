@@ -13,13 +13,12 @@ Over time I found that the answer varies, depending on progress, needs, and goal
 ```git clone https://github.com/evliang/leetcode-problem-picker.git```
 
 ## Usage:
-```python lcpp.py [--topic "stack,trie,graph,dp"] [--list "airbnb, blind75, to_revisit"] [-k 5] [-i]```
+```python lcpp.py [-t stack trie graph dp] [--list airbnb google blind75 skipped] [-k 5] [-i]```
 
 ```
---topic -t          selects from a pool of problems associated with a subject (according to leetcode)
-                    see constants.py for list of options
+--topic_list -t     selects from a pool of problems associated with a subject (e.g. trie, greedy, graph)
 --list -l           chooses problems from one or more text files (comma-delimited)
---count -k          number of problems to get
+--num_problems -k   number of problems to get
 --interactive -i    interactive mode. Preferred way to input data. See section below for more info.
 note: no topic or list will result in a problem randomly being selected
 ```
@@ -30,7 +29,6 @@ Displays information about a specific problem: Name, difficulty, Acceptance rate
 
 ## Interactive Mode:
 This mode selects and displays a single problem and waits for input:
-(TODO: provide screenshot)
 
 ```
 info                displays details about problem. problem name, difficulty, acceptance rate
@@ -38,10 +36,10 @@ hint                displays related topics
 y/n,num_errs,time   data regarding attempt. See Completed Problems section for more details
 easy                mark as completed with low completion time, then selects a different problem
 hard                adds to a hard/skipped list. selects a less similar, less challenging problem
-revisit
-refresh
-pause
-break
+revisit [ID]        mark problem as one to revisit later
+refresh [ID]        mark problem as one to "refresh" on later
+pause               pause the timer
+break               take a break. restarts the timer
 quit                stop the program
 ```
 
@@ -59,25 +57,3 @@ date                DateTime. date completed
 num_errs            float. # mistakes made. Float to differentiate minor from major errors.
 ```
 3. interactive mode: Solve a problem after it is assigned, then record results before getting the next problem. Appends results to completed.csv.
-
-## Keeping these lists up-to-date
-constants.py contains list of problem numbers associated for every subject
-Also included are company files. Possibly outdated, came from another repo.
-
-If you have leetcode premium and want to keep this info up-to-date:
-1. Visit desired problem set e.g. ["Facebook"](https://leetcode.com/company/facebook/)
-2. Display All rows in one page
-3. open up browser's Developer Tools (F12), and from console, run
-
-```console.log(Array.from(document.querySelectorAll('.reactable-data tr td[label="#"]')).map(x => x.textContent).toString())```
-
-4. Copy the resulting list into text file
-5. Send PR? :)
-
-## TODO
-
-1. Clean up and prettify what I have. Stay tuned.
-2. Support multiple ways to handle completed problems
-3. Improve interactive mode
-4. Level Up: User maintains a list of attempted problems. Program combines this with each problem’s "acceptance rate" to approximate a "skill range" for each topic (e.g. Hard 24-28% for Trees, Medium 31-45% for graphs).
-5. Weighted random
