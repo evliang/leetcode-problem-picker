@@ -38,6 +38,10 @@ hint                displays related topics
 y/n,num_errs,time   data regarding attempt. See Completed Problems section for more details
 easy                mark as completed with low completion time, then selects a different problem
 hard                adds to a hard/skipped list. selects a less similar, less challenging problem
+revisit
+refresh
+pause
+break
 quit                stop the program
 ```
 

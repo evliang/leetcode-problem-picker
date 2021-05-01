@@ -8,6 +8,9 @@ import csv
 from collections import defaultdict
 from timeit import default_timer as timer
 import datetime
+import argparse
+import itertools
+import json
 
 ProblemType = Enum('ProblemType', 'Top Freq Easiest Hardest Common Random')
 
@@ -25,50 +28,71 @@ def load_completed_list():
 
 def load_problem_nums(file_name):
     ret = set()
-    with open(file_name, 'r') as f:
-        for num_string in f.read().split(','):
-            try:
-                ret.add(int(num_string.strip()))
-            except ValueError:
-                continue
+    try:
+        with open(file_name, 'r') as f:
+            for num_string in f.read().split(','):
+                try:
+                    ret.add(int(num_string.strip()))
+                except ValueError:
+                    continue
+    except Exception:
+        return ret
     return ret
 
-def pick_problems(problem_type=ProblemType.Random, categories=[], companies=[], k=5):
+def pick_problems(problems, topic_list, k=5, problem_type=ProblemType.Random):
     completed = load_completed_list()
     skipped_hard = load_problem_nums('skipped.txt')
     revisit = load_problem_nums('revisit_later.txt')
-    problem_set = set(companies) - completed - skipped_hard - revisit
+
+    selected_topics = set(itertools.chain(*[topics[topic] for topic in topic_list]))
+    problem_set = (set(problems) & selected_topics) - completed - skipped_hard - revisit
     if problem_type==ProblemType.Random:
         return random.sample(list(problem_set), k)
     return []
 
-def record_problems():
+def mark_completed(leetcode_id, was_solved, num_errs, time):
+    with open('completed.csv', 'a') as f:
+        f.write(f'\n{leetcode_id},{was_solved},{num_errs},{time},{datetime.datetime.now():%Y-%m-%d}')
+
+def mark_problem(filename, leetcode_id):
+    with open(filename, 'a') as f:
+        f.write(f'{leetcode_id}')
+
     # problem# / was completed / time spent / num mistakes (if completed)
     # internal: last attempted date, too long, easy/medium/hard, acceptance rate, thumbs up/down, number attempts
     None
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="",
+
+    )
+    parser.add_argument('--interactive', '-i', action='store_true', default=False, help='Easily log results while doing leetcode problems')
+    parser.add_argument('--topic_list', '-t', nargs='+', default=topics.keys(),
+                        help='List of subjects to filter on'
+                             'Options are:'
+                             'array hash table ll greedy backtrack graph etc')
+    parser.add_argument('--list', '-l', nargs='+', default=['blind75'], help="Companies interested in (or file(s) containing comma-delimited problems)")
+    parser.add_argument('--num_problems', '-k', type=int, default=5, choices=range(1,50), help="Determine number of problems to solve")
+
+    args = parser.parse_args()
+
     faang_companies = ['amazon', 'apple', 'google', 'netflix', 'facebook']
     my_companies = ['adobe', 'microsoft', 'airbnb', 'linkedin', 'tesla', 'twitter', 'hulu', 'redfin', 'snapchat',
                 'paypal', 'pinterest', 'audible', 'atlassian', 'lyft', 'uber', 'twitch', 'twilio', 'robinhood',
                 'cruise', 'reddit', 'valve', 'walmart', 'dropbox']
 
-    all_problems = {}
     easy_set, medium_set, hard_set = set(), set(), set()
     # also store in sorted list for binsearch range lookup: https://stackoverflow.com/a/2899190
 
-    companies = defaultdict(dict)
-    problem_to_company = defaultdict(set)
-
-    for fi in glob.glob('companies//*.csv'):
-        (company,duration) = fi[10:-4].rsplit('_')
-        companies[company][duration] = dict()
-        with open(fi, 'r') as f:
-            for line in csv.DictReader(f, fieldnames=('ID', 'Name', 'Acceptance', 'Difficulty', 'Frequency', 'Link')):
-                problem_num = int(line.pop('ID'))
-                all_problems[problem_num] = line
-                companies[company][duration][problem_num] = line.pop('Frequency')
-                problem_to_company[problem_num].add(company)
+    with open('problem_to_companies.json') as json_file:
+        problem_to_companies = json.load(json_file)
+    
+    with open('company_to_problems.json') as json_file:
+        company_to_problems = json.load(json_file)
+    
+    with open('all_problems.json') as json_file:
+        all_problems = json.load(json_file)
 
     #populate company file w/ maximum of 4 lines (sorted). each line is a comma separated list of problem numbers.
         # question: does 1yr,2yr and alltime contain 6mo? does 2yr contain 1yr? I think not?
@@ -76,11 +100,17 @@ if __name__ == "__main__":
         # 1yr
         # 2yr
         # alltime
-    if len(sys.argv) == 1:
-        None
-        #print(pick_problems(companies=blind_list, k=5))
-    elif sys.argv[1] == 'interactive':
-        problems = pick_problems(companies=blind75, k=5)
+    full_list = set()
+    for elem in args.list:
+        if elem in company_to_problems:
+            for duration in company_to_problems[elem]:
+                full_list.add(company_to_problems[elem][duration])
+        elif elem.lower().strip('.txt') in set(f.lower().strip('.txt') for f in glob.glob('*.txt')):
+            # load from file
+            full_list.update(load_problem_nums(f"{elem.lower().strip('.txt')}.txt"))
+
+    if args.interactive:
+        problems = pick_problems(problems=full_list, topic_list=args.topic_list, k=args.num_problems)
 
         companies = faang_companies + my_companies # all companies?
         d = {}
@@ -93,7 +123,7 @@ if __name__ == "__main__":
         for (idx,leetcode_id) in enumerate(problems):
             problem = all_problems[leetcode_id]
             msg = "First problem" if idx == 0 else "Last problem" if idx == len(problems)-1 else "Next up"
-            print(f"\n\n{msg}:\n{leetcode_id}: {problem['Name']} {problem['Link']}")
+            print(f"\n{msg}:\n{leetcode_id}: {problem['Name']} {problem['Link']}")
             start_time = timer()
             while True:
                 inp = input('When completed, enter: y/n,[num_errs],[time]\n')
@@ -109,7 +139,7 @@ if __name__ == "__main__":
                             ret.append(company)
                     print(f'\t {len(ret)}: ' + ', '.join(ret))
                 elif inp == 'info':
-                    company_list = problem_to_company[leetcode_id]
+                    company_list = problem_to_companies[leetcode_id]
                     difficulty_string = "medium difficulty" if problem['Difficulty'] == "Medium" else "considered easy" if problem['Difficulty'] == 'Easy' else problem['Difficulty']
                     print(f"{leetcode_id} {problem['Name']} is {difficulty_string}: {problem['Acceptance']} of submissions pass")
                     print(f"{len(company_list)} have asked this question: {', '.join(company_list)}")
@@ -118,15 +148,26 @@ if __name__ == "__main__":
                 elif inp == 'break':
                     input("Paused. Press Enter to reset the clock and start the problem\n")
                     start_time = timer()
+                elif inp == 'easy':
+                    # Replace with new problem not in problems
+                    partial_list = list(set(full_list) - set(problems))
+                    leetcode_id = pick_problems(problems=partial_list, topic_list=args.topic_list, k=1)[0]
+                elif inp == 'hard':
+                    mark_problem('skipped.txt', leetcode_id)
+                elif inp.startswith('revisit'):
+                    leetcode_id = inp.split(' ')[1] if len(inp.split(' ')) > 0 else leetcode_id
+                    mark_problem('revisit_later.txt', leetcode_id)
+                elif inp.startswith('refresh'):
+                    leetcode_id = inp.split(' ')[1] if len(inp.split(' ')) > 0 else leetcode_id
+                    mark_problem('refresh.txt', leetcode_id)
                 elif inp.startswith('y') or inp.startswith('n'):
                     # log entry into csv
-                    end_time = timer()
                     entry = inp.split(',')
                     was_solved = 'yes' if entry[0].startswith('y') else 'no'
                     num_errs = entry[1] if len(entry) > 1 else '0'
-                    time = entry[2] if len(entry) > 2 else (end_time - start_time)//60
-                    with open('completed.csv', 'a') as f:
-                        f.write(f'\n{leetcode_id},{was_solved},{num_errs},{time},{datetime.datetime.now():%Y-%m-%d}')
+                    time = entry[2] if len(entry) > 2 else (timer() - start_time)//60
+
+                    mark_completed(leetcode_id, was_solved, num_errs, time)
                     break
                 elif inp == 'help':
                     #print_help_screen()
@@ -134,3 +175,5 @@ if __name__ == "__main__":
                     None
                 else:
                     print(f"Invalid input. Type help for more options")
+    else:
+        print(pick_problems(problems=full_list, topic_list=args.topic_list, k=args.num_problems))
