@@ -3,8 +3,7 @@ import sys
 import os
 from enum import Enum
 import random
-from constants import topics, blind75
-import csv
+from constants import topics
 from collections import defaultdict
 from timeit import default_timer as timer
 import datetime
@@ -46,10 +45,6 @@ def pick_problems(user_data, problems, topic_list, k=5, problem_type=ProblemType
         return random.sample(list(problem_set), k)
     return []
 
-def writef():
-    with open('user.json', 'w') as f:
-        f.write(re.sub(r',\n    ', ',', json.dumps(d, indent=2)))
-
 def mark_completed(leetcode_id, was_solved, num_errs, time):
     # problem# / was completed / time spent / num mistakes (if completed)
     # todo: internally track: last attempted date, too long, easy/medium/hard, acceptance rate, thumbs up/down, number attempts
@@ -77,29 +72,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     user_data = load_user_data()
-    mark_problem(user_data, 'hard', 3)
-    mark_problem(user_data, 'hard', 7)
-    mark_problem(user_data, 'hard', 76)
-    mark_problem(user_data, 'revisit', 3)
-    mark_problem(user_data, 'revisit', 5)
-    mark_problem(user_data, 'refresh', 268)
-
-    faang_companies = ['amazon', 'apple', 'google', 'netflix', 'facebook']
-    my_companies = ['adobe', 'microsoft', 'airbnb', 'linkedin', 'tesla', 'twitter', 'hulu', 'redfin', 'snapchat',
-                'paypal', 'pinterest', 'audible', 'atlassian', 'lyft', 'uber', 'twitch', 'twilio', 'robinhood',
-                'cruise', 'reddit', 'valve', 'walmart', 'dropbox']
 
     easy_set, medium_set, hard_set = set(), set(), set()
     # also store in sorted list for binsearch range lookup: https://stackoverflow.com/a/2899190
 
-    with open('problem_to_companies.json') as json_file:
-        problem_to_companies = json.load(json_file)
-    
-    with open('company_to_problems.json') as json_file:
-        company_to_problems = json.load(json_file)
-    
-    with open('all_problems.json') as json_file:
-        all_problems = json.load(json_file)
+    problem_to_companies = load_json('problem_to_companies.json')
+    company_to_problems = load_json('company_to_problems.json')
+    all_problems = load_json('all_problems.json')
+    companies = user_data["faang"] + user_data["my_companies]"] # all companies?
 
     #populate company file w/ maximum of 4 lines (sorted). each line is a comma separated list of problem numbers.
         # question: does 1yr,2yr and alltime contain 6mo? does 2yr contain 1yr? I think not?
@@ -107,20 +87,19 @@ if __name__ == "__main__":
         # 1yr
         # 2yr
         # alltime
-    full_list = set()
+    problem_set = set()
     for elem in args.list:
         if elem in company_to_problems:
             for duration in company_to_problems[elem]:
-                full_list.add(company_to_problems[elem][duration])
+                problem_set.add(company_to_problems[elem][duration])
         elif elem.lower() in user_data:
             # load from file
-            full_list.update(user_data[elem.lower()])
+            problem_set.update(user_data[elem.lower()])
 
     if args.interactive:
-        problems = pick_problems(user_data, problems=full_list, topic_list=args.topic_list, k=args.num_problems)
+        problems = pick_problems(user_data, problems=problem_set, topic_list=args.topic_list, k=args.num_problems)
+        problem_set -= set(problems)
 
-        companies = faang_companies + my_companies # all companies?
-        d = {}
         #for company in companies:
         #    d[company] = get_the_question_set(get_frequencies([company]))
 
@@ -129,7 +108,7 @@ if __name__ == "__main__":
         
         for (idx,leetcode_id) in enumerate(problems):
             problem = all_problems[leetcode_id]
-            msg = "First problem" if idx == 0 else "Last problem" if idx == len(problems)-1 else "Next up"
+            msg = "First problem" if idx == 0 else "Last problem" if idx == args.num_problems-1 else "Next up"
             print(f"\n{msg}:\n{leetcode_id}: {problem['Name']} {problem['Link']}")
             start_time = timer()
             while True:
@@ -137,14 +116,8 @@ if __name__ == "__main__":
                 if inp.startswith('q'):
                     quit()
                 if inp == 'hint':
-                    ret = []
-                    # problem # =>
-                    #   details: name, difficulty, accept rate. need to set up dict. can just grab one from company.
-                    #   [company (%)] dict from problem# => companyname => %
-                    for company in d:
-                        if int(inp) in d[company]:
-                            ret.append(company)
-                    print(f'\t {len(ret)}: ' + ', '.join(ret))
+                    # TODO need problem to topic dictionary
+                    raise Exception("Not Implemented Yet")
                 elif inp == 'info':
                     company_list = problem_to_companies[leetcode_id]
                     difficulty_string = "medium difficulty" if problem['Difficulty'] == "Medium" else "considered easy" if problem['Difficulty'] == 'Easy' else problem['Difficulty']
@@ -156,11 +129,15 @@ if __name__ == "__main__":
                     input("Paused. Press Enter to reset the clock and start the problem\n")
                     start_time = timer()
                 elif inp == 'easy':
+                    mark_completed(leetcode_id, 'yes', '0', '5')
                     # Replace with new problem not in problems
-                    partial_list = list(set(full_list) - set(problems))
-                    leetcode_id = pick_problems(user_data, problems=partial_list, topic_list=args.topic_list, k=1)[0]
+                    leetcode_id = pick_problems(user_data, problems=problem_set, topic_list=args.topic_list, k=1)[0]
+                    start_time = timer()
                 elif inp == 'hard':
                     mark_problem(user_data, 'hard', leetcode_id)
+                    leetcode_id = pick_problems(user_data, problems=problem_set, topic_list=args.topic_list, k=1)[0]
+                    # TODO pick problem with same topic and higher acceptance rate (if possible). If none, default to above line
+                    start_time = timer()
                 elif inp.startswith('revisit'):
                     leetcode_id = inp.split(' ')[1] if len(inp.split(' ')) > 0 else leetcode_id
                     mark_problem(user_data, 'revisit', leetcode_id)
@@ -183,4 +160,4 @@ if __name__ == "__main__":
                 else:
                     print(f"Invalid input. Type help for more options")
     else:
-        print(pick_problems(user_data, problems=full_list, topic_list=args.topic_list, k=args.num_problems))
+        print(pick_problems(user_data, problems=problem_set, topic_list=args.topic_list, k=args.num_problems))
