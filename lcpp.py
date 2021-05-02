@@ -40,7 +40,7 @@ def pick_problems(user_data, problems, topic_list, k=5, problem_type=ProblemType
     revisit = user_data['revisit']
 
     selected_topics = set(itertools.chain(*[topics[topic] for topic in topic_list]))
-    problem_set = (set(problems) & selected_topics) - completed - skipped_hard - revisit
+    problem_set = (set(problems) & selected_topics) - set(completed) - set(skipped_hard) - set(revisit)
     if problem_type==ProblemType.Random:
         return random.sample(list(problem_set), k)
     return []
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     problem_to_companies = load_json('problem_to_companies.json')
     company_to_problems = load_json('company_to_problems.json')
     all_problems = load_json('all_problems.json')
-    my_companies = set(user_data["faang"] + user_data["my_companies]"])
+    my_companies = set(user_data["faang"] + user_data["my_companies"])
 
     #populate company file w/ maximum of 4 lines (sorted). each line is a comma separated list of problem numbers.
         # question: does 1yr,2yr and alltime contain 6mo? does 2yr contain 1yr? I think not?
@@ -104,7 +104,7 @@ if __name__ == "__main__":
         print(f"Other valid inputs: {', '.join(valid_inputs)}")
         
         for (idx,leetcode_id) in enumerate(problems):
-            problem = all_problems[leetcode_id]
+            problem = all_problems[str(leetcode_id)]
             msg = "First problem" if idx == 0 else "Last problem" if idx == args.num_problems-1 else "Next up"
             print(f"\n{msg}:\n{leetcode_id}: {problem['Name']} {problem['Link']}")
             start_time = timer()
@@ -118,8 +118,8 @@ if __name__ == "__main__":
                 elif inp == 'info':
                     difficulty_string = "medium difficulty" if problem['Difficulty'] == "Medium" else "considered easy" if problem['Difficulty'] == 'Easy' else problem['Difficulty']
                     print(f"{leetcode_id} {problem['Name']} is {difficulty_string}: {problem['Acceptance']} of submissions pass")
-                    company_list = my_companies & set(problem_to_companies[leetcode_id])
-                    company_list_string = f"including: {', '.join(company_list)}" if len(company_list) > 0 else f"including: {','.join(problem_to_companies[leetcode_id][:5])}"
+                    company_list = my_companies & set(problem_to_companies[str(leetcode_id)])
+                    company_list_string = f"including: {', '.join(company_list)}" if len(company_list) > 0 else f"including: {','.join(problem_to_companies[str(leetcode_id)][:5])}"
                     print(f"{len(company_list)} companies have asked this question {company_list_string}")
                 elif inp == 'pause':
                     input("Paused. Press Enter to continue the clock\n")
@@ -139,10 +139,10 @@ if __name__ == "__main__":
                     # TODO pick problem with same topic and higher acceptance rate (if possible). If none, default to above line
                     start_time = timer()
                 elif inp.startswith('revisit'):
-                    leetcode_id = int(inp.split(' ')[1]) if len(inp.split(' ')) > 0 else leetcode_id
+                    leetcode_id = inp.split(' ')[1] if len(inp.split(' ')) > 0 else leetcode_id
                     mark_problem(user_data, 'revisit', leetcode_id)
                 elif inp.startswith('refresh'):
-                    leetcode_id = int(inp.split(' ')[1]) if len(inp.split(' ')) > 0 else leetcode_id
+                    leetcode_id = inp.split(' ')[1] if len(inp.split(' ')) > 0 else leetcode_id
                     mark_problem(user_data, 'refresh', leetcode_id)
                 elif inp.startswith('y') or inp.startswith('n'):
                     # log entry into csv
