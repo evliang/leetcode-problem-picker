@@ -11,10 +11,11 @@ import datetime
 import argparse
 import itertools
 import json
+import re
 
 ProblemType = Enum('ProblemType', 'Top Freq Easiest Hardest Common Random')
 
-def load_completed_list():
+def load_completed_list(user_data):
     completed1 = set()
     with open('completed.csv', 'r') as f:
         for line in f.read().splitlines():
@@ -22,27 +23,22 @@ def load_completed_list():
                 completed1.add(int(line.split(',')[0].strip()))
             except ValueError:
                 continue
-    completed2 = load_problem_nums('completed.txt')
+    completed2 = set(user_data["completed"])
     # TODO handle skipped, revisit, refresh lists
     return completed1.union(completed2)
 
-def load_problem_nums(file_name):
-    ret = set()
-    try:
-        with open(file_name, 'r') as f:
-            for num_string in f.read().split(','):
-                try:
-                    ret.add(int(num_string.strip()))
-                except ValueError:
-                    continue
-    except Exception:
-        return ret
-    return ret
+def load_json(filename):
+    with open(filename) as json_file:
+        return json.load(json_file)
 
-def pick_problems(problems, topic_list, k=5, problem_type=ProblemType.Random):
-    completed = load_completed_list()
-    skipped_hard = load_problem_nums('skipped.txt')
-    revisit = load_problem_nums('revisit_later.txt')
+def load_user_data():
+    return load_json('user.json')
+
+def pick_problems(user_data, problems, topic_list, k=5, problem_type=ProblemType.Random):
+    completed = load_completed_list(user_data)
+
+    skipped_hard = user_data['hard']
+    revisit = user_data['revisit']
 
     selected_topics = set(itertools.chain(*[topics[topic] for topic in topic_list]))
     problem_set = (set(problems) & selected_topics) - completed - skipped_hard - revisit
@@ -50,17 +46,20 @@ def pick_problems(problems, topic_list, k=5, problem_type=ProblemType.Random):
         return random.sample(list(problem_set), k)
     return []
 
+def writef():
+    with open('user.json', 'w') as f:
+        f.write(re.sub(r',\n    ', ',', json.dumps(d, indent=2)))
+
 def mark_completed(leetcode_id, was_solved, num_errs, time):
+    # problem# / was completed / time spent / num mistakes (if completed)
+    # todo: internally track: last attempted date, too long, easy/medium/hard, acceptance rate, thumbs up/down, number attempts
     with open('completed.csv', 'a') as f:
         f.write(f'\n{leetcode_id},{was_solved},{num_errs},{time},{datetime.datetime.now():%Y-%m-%d}')
 
-def mark_problem(filename, leetcode_id):
-    with open(filename, 'a') as f:
-        f.write(f'{leetcode_id}')
-
-    # problem# / was completed / time spent / num mistakes (if completed)
-    # internal: last attempted date, too long, easy/medium/hard, acceptance rate, thumbs up/down, number attempts
-    None
+def mark_problem(user_data, mark_type, leetcode_id):
+    user_data[mark_type].append(leetcode_id)
+    with open('user.json', 'w') as f:
+        f.write(re.sub(r',\n    ', ',', json.dumps(user_data, indent=2)))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -76,6 +75,14 @@ if __name__ == "__main__":
     parser.add_argument('--num_problems', '-k', type=int, default=5, choices=range(1,50), help="Determine number of problems to solve")
 
     args = parser.parse_args()
+
+    user_data = load_user_data()
+    mark_problem(user_data, 'hard', 3)
+    mark_problem(user_data, 'hard', 7)
+    mark_problem(user_data, 'hard', 76)
+    mark_problem(user_data, 'revisit', 3)
+    mark_problem(user_data, 'revisit', 5)
+    mark_problem(user_data, 'refresh', 268)
 
     faang_companies = ['amazon', 'apple', 'google', 'netflix', 'facebook']
     my_companies = ['adobe', 'microsoft', 'airbnb', 'linkedin', 'tesla', 'twitter', 'hulu', 'redfin', 'snapchat',
@@ -105,12 +112,12 @@ if __name__ == "__main__":
         if elem in company_to_problems:
             for duration in company_to_problems[elem]:
                 full_list.add(company_to_problems[elem][duration])
-        elif elem.lower().strip('.txt') in set(f.lower().strip('.txt') for f in glob.glob('*.txt')):
+        elif elem.lower() in user_data:
             # load from file
-            full_list.update(load_problem_nums(f"{elem.lower().strip('.txt')}.txt"))
+            full_list.update(user_data[elem.lower()])
 
     if args.interactive:
-        problems = pick_problems(problems=full_list, topic_list=args.topic_list, k=args.num_problems)
+        problems = pick_problems(user_data, problems=full_list, topic_list=args.topic_list, k=args.num_problems)
 
         companies = faang_companies + my_companies # all companies?
         d = {}
@@ -151,15 +158,15 @@ if __name__ == "__main__":
                 elif inp == 'easy':
                     # Replace with new problem not in problems
                     partial_list = list(set(full_list) - set(problems))
-                    leetcode_id = pick_problems(problems=partial_list, topic_list=args.topic_list, k=1)[0]
+                    leetcode_id = pick_problems(user_data, problems=partial_list, topic_list=args.topic_list, k=1)[0]
                 elif inp == 'hard':
-                    mark_problem('skipped.txt', leetcode_id)
+                    mark_problem(user_data, 'hard', leetcode_id)
                 elif inp.startswith('revisit'):
                     leetcode_id = inp.split(' ')[1] if len(inp.split(' ')) > 0 else leetcode_id
-                    mark_problem('revisit_later.txt', leetcode_id)
+                    mark_problem(user_data, 'revisit', leetcode_id)
                 elif inp.startswith('refresh'):
                     leetcode_id = inp.split(' ')[1] if len(inp.split(' ')) > 0 else leetcode_id
-                    mark_problem('refresh.txt', leetcode_id)
+                    mark_problem(user_data, 'refresh', leetcode_id)
                 elif inp.startswith('y') or inp.startswith('n'):
                     # log entry into csv
                     entry = inp.split(',')
@@ -176,4 +183,4 @@ if __name__ == "__main__":
                 else:
                     print(f"Invalid input. Type help for more options")
     else:
-        print(pick_problems(problems=full_list, topic_list=args.topic_list, k=args.num_problems))
+        print(pick_problems(user_data, problems=full_list, topic_list=args.topic_list, k=args.num_problems))
