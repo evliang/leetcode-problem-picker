@@ -1,12 +1,13 @@
 # leetcode-problem-picker
 
-## Purpose:
-This project was a response to my reoccurring question *"Which leetcode problem should I do next?"*
+## "Which problem should I do next?"
 
-Over time I found that the answer varies, depending on progress, needs, and goals:
-1. **Topic Focus**: Narrow down to 1+ subjects e.g. "only do problems related to graphs or DP".
-2. **Filtered Lists**: Honing in on questions asked by desired companies. Applies to lists like Blind's Curated 75.
-3. **Level Up** (WIP): Deduces user's "skill range" for each topic in order to challenge (but not discourage).
+When a problem is too easy, you're wasting your time. Too difficult, and you may soon get discouraged.
+
+During my leetcode journey, I discovered the answer to "which problems should I do next?" depend on goals and progress. I categorized these and gave them names.
+1. **Topic Focus**: Narrow down to 1+ subjects e.g. "trees, graphs or DP". Intended for learning and retaining.
+2. **Frequently Asked**: Questions from a list, e.g. ones asked by companies or list of Blind's Curated 75.
+3. **Level Up** (WIP): Deduces user's "skill range" for each topic in order to challenge appropriately.
 4. **Weighted random** (TODO): Weighted towards questions with high like count, greater like/dislike ratio, etc.
 
 ## Setup:
@@ -31,10 +32,10 @@ Displays information about a specific problem: Name, difficulty, Acceptance rate
 This mode selects and displays a single problem and waits for input:
 
 ```
-info                displays details about problem. problem name, difficulty, acceptance rate
-hint                displays related topics
-y/n,num_errs,time   data regarding attempt. See Completed Problems section for more details
-easy                mark as completed with low completion time, then selects a different problem
+info                displays details about problem: problem name, difficulty, acceptance rate
+hint                displays topics related to a solution
+y/n,num_errs,time   Enter data regarding attempt. See next section for details
+easy                mark as completed (quickly), then selects a different problem
 hard                adds to a hard/skipped list. selects a less similar, less challenging problem
 revisit [ID]        mark problem as one to revisit later
 refresh [ID]        mark problem as one to "refresh" on later

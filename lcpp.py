@@ -79,7 +79,7 @@ if __name__ == "__main__":
     problem_to_companies = load_json('problem_to_companies.json')
     company_to_problems = load_json('company_to_problems.json')
     all_problems = load_json('all_problems.json')
-    companies = user_data["faang"] + user_data["my_companies]"] # all companies?
+    my_companies = set(user_data["faang"] + user_data["my_companies]"])
 
     #populate company file w/ maximum of 4 lines (sorted). each line is a comma separated list of problem numbers.
         # question: does 1yr,2yr and alltime contain 6mo? does 2yr contain 1yr? I think not?
@@ -100,9 +100,6 @@ if __name__ == "__main__":
         problems = pick_problems(user_data, problems=problem_set, topic_list=args.topic_list, k=args.num_problems)
         problem_set -= set(problems)
 
-        #for company in companies:
-        #    d[company] = get_the_question_set(get_frequencies([company]))
-
         valid_inputs = ["info", "hint", "easy", "hard", "quit", "pause", "break"]
         print(f"Other valid inputs: {', '.join(valid_inputs)}")
         
@@ -119,10 +116,11 @@ if __name__ == "__main__":
                     # TODO need problem to topic dictionary
                     raise Exception("Not Implemented Yet")
                 elif inp == 'info':
-                    company_list = problem_to_companies[leetcode_id]
                     difficulty_string = "medium difficulty" if problem['Difficulty'] == "Medium" else "considered easy" if problem['Difficulty'] == 'Easy' else problem['Difficulty']
                     print(f"{leetcode_id} {problem['Name']} is {difficulty_string}: {problem['Acceptance']} of submissions pass")
-                    print(f"{len(company_list)} have asked this question: {', '.join(company_list)}")
+                    company_list = my_companies & set(problem_to_companies[leetcode_id])
+                    company_list_string = f"including: {', '.join(company_list)}" if len(company_list) > 0 else f"including: {','.join(problem_to_companies[leetcode_id][:5])}"
+                    print(f"{len(company_list)} companies have asked this question {company_list_string}")
                 elif inp == 'pause':
                     input("Paused. Press Enter to continue the clock\n")
                 elif inp == 'break':
@@ -132,17 +130,19 @@ if __name__ == "__main__":
                     mark_completed(leetcode_id, 'yes', '0', '5')
                     # Replace with new problem not in problems
                     leetcode_id = pick_problems(user_data, problems=problem_set, topic_list=args.topic_list, k=1)[0]
+                    problem_set.discard(leetcode_id)
                     start_time = timer()
                 elif inp == 'hard':
                     mark_problem(user_data, 'hard', leetcode_id)
                     leetcode_id = pick_problems(user_data, problems=problem_set, topic_list=args.topic_list, k=1)[0]
+                    problem_set.discard(leetcode_id)
                     # TODO pick problem with same topic and higher acceptance rate (if possible). If none, default to above line
                     start_time = timer()
                 elif inp.startswith('revisit'):
-                    leetcode_id = inp.split(' ')[1] if len(inp.split(' ')) > 0 else leetcode_id
+                    leetcode_id = int(inp.split(' ')[1]) if len(inp.split(' ')) > 0 else leetcode_id
                     mark_problem(user_data, 'revisit', leetcode_id)
                 elif inp.startswith('refresh'):
-                    leetcode_id = inp.split(' ')[1] if len(inp.split(' ')) > 0 else leetcode_id
+                    leetcode_id = int(inp.split(' ')[1]) if len(inp.split(' ')) > 0 else leetcode_id
                     mark_problem(user_data, 'refresh', leetcode_id)
                 elif inp.startswith('y') or inp.startswith('n'):
                     # log entry into csv
