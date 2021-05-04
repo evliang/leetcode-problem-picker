@@ -139,17 +139,17 @@ if __name__ == "__main__":
                     # TODO pick problem with same topic and higher acceptance rate (if possible). If none, default to above line
                     start_time = timer()
                 elif inp.startswith('revisit'):
-                    leetcode_id = inp.split(' ')[1] if len(inp.split(' ')) > 0 else leetcode_id
+                    leetcode_id = int(inp.split(' ')[1]) if len(inp.split(' ')) > 0 else leetcode_id
                     mark_problem(user_data, 'revisit', leetcode_id)
                 elif inp.startswith('refresh'):
-                    leetcode_id = inp.split(' ')[1] if len(inp.split(' ')) > 0 else leetcode_id
+                    leetcode_id = int(inp.split(' ')[1]) if len(inp.split(' ')) > 0 else leetcode_id
                     mark_problem(user_data, 'refresh', leetcode_id)
                 elif inp.startswith('y') or inp.startswith('n'):
                     # log entry into csv
                     entry = inp.split(',')
                     was_solved = 'yes' if entry[0].startswith('y') else 'no'
                     num_errs = entry[1] if len(entry) > 1 else '0'
-                    time = entry[2] if len(entry) > 2 else (timer() - start_time)//60
+                    time = entry[2] if len(entry) > 2 else round((timer()-start_time)/60)
 
                     mark_completed(leetcode_id, was_solved, num_errs, time)
                     break
