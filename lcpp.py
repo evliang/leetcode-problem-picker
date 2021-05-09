@@ -122,7 +122,9 @@ if __name__ == "__main__":
                     company_list_string = f"including: {', '.join(company_list)}" if len(company_list) > 0 else f"including: {','.join(problem_to_companies[str(leetcode_id)][:5])}"
                     print(f"{len(company_list)} companies have asked this question {company_list_string}")
                 elif inp == 'pause':
+                    pause_time = timer()
                     input("Paused. Press Enter to continue the clock\n")
+                    start_time = pause_time - start_time + timer()
                 elif inp == 'break':
                     input("Paused. Press Enter to reset the clock and start the problem\n")
                     start_time = timer()
@@ -138,6 +140,9 @@ if __name__ == "__main__":
                     problem_set.discard(leetcode_id)
                     # TODO pick problem with same topic and higher acceptance rate (if possible). If none, default to above line
                     start_time = timer()
+                elif inp == 'skip':
+                    leetcode_id = pick_problems(user_data, problems=problem_set, topic_list=args.topic_list, k=1)[0]
+                    start_time = timer()
                 elif inp.startswith('revisit'):
                     leetcode_id = int(inp.split(' ')[1]) if len(inp.split(' ')) > 0 else leetcode_id
                     mark_problem(user_data, 'revisit', leetcode_id)
@@ -149,9 +154,11 @@ if __name__ == "__main__":
                     entry = inp.split(',')
                     was_solved = 'yes' if entry[0].startswith('y') else 'no'
                     num_errs = entry[1] if len(entry) > 1 else '0'
-                    time = entry[2] if len(entry) > 2 else round((timer()-start_time)/60)
+                    true_time = round((timer()-start_time)/60)
+                    time = entry[2] if len(entry) > 2 else true_time
 
                     mark_completed(leetcode_id, was_solved, num_errs, time)
+                    print(f"completed in {true_time}min")
                     break
                 elif inp == 'help':
                     #print_help_screen()
