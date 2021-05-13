@@ -34,13 +34,13 @@ def load_user_data():
     return load_json('user.json')
 
 def pick_problems(user_data, problems, topic_list, k=5, problem_type=ProblemType.Random):
-    completed = load_completed_list(user_data)
-
-    skipped_hard = user_data['hard']
-    revisit = user_data['revisit']
-
     selected_topics = set(itertools.chain(*[topics[topic] for topic in topic_list]))
-    problem_set = (set(problems) & selected_topics) - set(completed) - set(skipped_hard) - set(revisit)
+
+    skip_set = set(load_completed_list(user_data))
+    for maybe_skip in ['hard', 'revisit', 'refresh']:
+        skip_set.update(user_data[maybe_skip] if maybe_skip not in args.list else [])
+
+    problem_set = (set(problems) & selected_topics) - skip_set
     if problem_type==ProblemType.Random:
         return random.sample(list(problem_set), min(len(problem_set),k))
     return []
@@ -67,7 +67,7 @@ if __name__ == "__main__":
                              'Options are:'
                              'array hash table ll greedy backtrack graph etc')
     parser.add_argument('--list', '-l', nargs='+', default=['blind75'], help="Companies interested in (or file(s) containing comma-delimited problems)")
-    parser.add_argument('--num_problems', '-k', type=int, default=5, choices=range(1,50), help="Determine number of problems to solve")
+    parser.add_argument('--num_problems', '-k', type=int, default=5, help="Determine number of problems to solve")
 
     args = parser.parse_args()
 
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     for elem in args.list:
         if elem in company_to_problems:
             for duration in company_to_problems[elem]:
-                problem_set.add(company_to_problems[elem][duration])
+                problem_set.update([int(leetcode_id) for leetcode_id in company_to_problems[elem][duration]])
         elif elem.lower() in user_data:
             # load from file
             problem_set.update(user_data[elem.lower()])
