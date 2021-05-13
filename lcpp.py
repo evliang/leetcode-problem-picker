@@ -42,7 +42,7 @@ def pick_problems(user_data, problems, topic_list, k=5, problem_type=ProblemType
     selected_topics = set(itertools.chain(*[topics[topic] for topic in topic_list]))
     problem_set = (set(problems) & selected_topics) - set(completed) - set(skipped_hard) - set(revisit)
     if problem_type==ProblemType.Random:
-        return random.sample(list(problem_set), k)
+        return random.sample(list(problem_set), min(len(problem_set),k))
     return []
 
 def mark_completed(leetcode_id, was_solved, num_errs, time):
@@ -133,22 +133,26 @@ if __name__ == "__main__":
                     # Replace with new problem not in problems
                     leetcode_id = pick_problems(user_data, problems=problem_set, topic_list=args.topic_list, k=1)[0]
                     problem_set.discard(leetcode_id)
+                    problem = all_problems[str(leetcode_id)]
+                    print(f"\n{msg}:\n{leetcode_id}: {problem['Name']} {problem['Link']}")
                     start_time = timer()
                 elif inp == 'hard':
                     mark_problem(user_data, 'hard', leetcode_id)
                     leetcode_id = pick_problems(user_data, problems=problem_set, topic_list=args.topic_list, k=1)[0]
                     problem_set.discard(leetcode_id)
+                    problem = all_problems[str(leetcode_id)]
+                    print(f"\n{msg}:\n{leetcode_id}: {problem['Name']} {problem['Link']}")
                     # TODO pick problem with same topic and higher acceptance rate (if possible). If none, default to above line
                     start_time = timer()
                 elif inp == 'skip':
                     leetcode_id = pick_problems(user_data, problems=problem_set, topic_list=args.topic_list, k=1)[0]
                     start_time = timer()
                 elif inp.startswith('revisit'):
-                    leetcode_id = int(inp.split(' ')[1]) if len(inp.split(' ')) > 0 else leetcode_id
-                    mark_problem(user_data, 'revisit', leetcode_id)
+                    marked_id = int(inp.split(' ')[1]) if len(inp.split(' ')) > 0 else leetcode_id
+                    mark_problem(user_data, 'revisit', marked_id)
                 elif inp.startswith('refresh'):
-                    leetcode_id = int(inp.split(' ')[1]) if len(inp.split(' ')) > 0 else leetcode_id
-                    mark_problem(user_data, 'refresh', leetcode_id)
+                    marked_id = int(inp.split(' ')[1]) if len(inp.split(' ')) > 0 else leetcode_id
+                    mark_problem(user_data, 'refresh', marked_id)
                 elif inp.startswith('y') or inp.startswith('n'):
                     # log entry into csv
                     entry = inp.split(',')
