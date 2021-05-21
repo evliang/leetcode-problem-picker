@@ -1,12 +1,15 @@
 # leetcode-problem-picker
 
-## "Which problem should I do next?"
+LeetCode-Problem-Picker uses your history to select problems catered to your goals and needs.
 
-When a problem is too easy, you're wasting your time. Too difficult, and you may soon get discouraged.
+Its purpose is to:
+Track progress in order to identify and improve on areas of weakness
+Choose problems that are most beneficial: frequently asked by the top tech companies
+Ensure balance between all subjects with weighted rotation.
 
-During my leetcode journey, I discovered the answer to "which problems should I do next?" depend on goals and progress. I categorized these and gave them names.
-1. **Topic Focus**: Narrow down to 1+ subjects e.g. "trees, graphs or DP". Intended for learning and retaining.
-2. **Frequently Asked**: Questions from a list, e.g. ones asked by companies or list of Blind's Curated 75.
+During my leetcode journey, I discovered the answer to "which problems should I do next?" depend on goals and progress:
+1. **Topic Focus**: Narrow down to 1+ subjects e.g. "trees, graphs or DP". Intended for learning and focusing on weaknesses.
+2. **Frequently Asked**: Questions from a list, e.g. ones asked by companies or list of Blind's Curated 75. The default.
 3. **Level Up** (WIP): Deduces user's "skill range" for each topic in order to challenge appropriately.
 4. **Weighted random** (TODO): Weighted towards questions with high like count, greater like/dislike ratio, etc.
 
@@ -45,16 +48,22 @@ quit                stop the program
 ```
 
 ## Completed Problems (optional/recommended):
-To maximize this program, you need to maintain a list of completed problems. This is to avoid being suggested problems you’ve done before, and in the case of "Level Up," to select problems slightly out of comfort zone
-This can be done in three ways:
-1. completed.txt: Format is a comma-delimited list of problem numbers e.g. "78,5,13,1337". Very simple, but not compatible with "Level Up"
-2. completed.csv: One problem, one line
-Expected format: ```LC number, [was solved],[time],[date],[num_errors]```
+To maximize this program, you need to maintain a list of completed problems. This can be done in the following ways:
+1. interactive mode: After completion of each assigned problem, the result is appended to completed.csv.
+2. completed.txt: Best if you have a history of solving leetcode problems. The file expects a comma-delimited list of problem numbers e.g. ```78,5,13,1337```
 ```
-LC number           integer. The only required field
-was solved          string. valid inputs: y/n (or yes/no). case insensitive
-time                integer. number of minutes spent on the problem
+To quickly populate with leetcode data:
+- Login to leetcode and visit [your list of solved problems](https://leetcode.com/problemset/all/?status=Solved). Select "All" rows per page in the bottom-left dropdown.
+- Open up Developer Tools (F12) and run this line in your Console tab:
+console.log(Array.from(document.querySelectorAll('.reactable-data tr td[label="#"]')).map(x => x.textContent).toString())
+- Copy the list and save into completed.txt
+```
+3. completed.csv: The file that interactive mode writes to. Provides details about attempt. One problem per line
+Expected format: ```LC number,was solved,[num_errors],[time],[date]```
+```
+LC number           integer
+was solved          string. valid inputs: y/n (or yes/no)
+num_errors          number of mistakes made when solving problem
+time                amount of time spent on the problem (minutes)
 date                DateTime. date completed
-num_errs            float. # mistakes made. Float to differentiate minor from major errors.
 ```
-3. interactive mode: Solve a problem after it is assigned, then record results before getting the next problem. Appends results to completed.csv.
