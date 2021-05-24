@@ -34,7 +34,7 @@ def load_user_data():
     return load_json('user.json')
 
 def pick_problems(user_data, problems, topic_list, k=5, problem_type=ProblemType.Random):
-    selected_topics = set(itertools.chain(*[topics[topic] for topic in topic_list]))
+    selected_topics = set(itertools.chain(*[topics.get(topic,[]) for topic in topic_list]))
 
     skip_set = set(load_completed_list(user_data))
     for maybe_skip in ['hard', 'revisit', 'refresh']:
@@ -99,6 +99,13 @@ if __name__ == "__main__":
     if args.interactive:
         problems = pick_problems(user_data, problems=problem_set, topic_list=args.topic_list, k=args.num_problems)
         problem_set -= set(problems)
+
+        if len(problems) == 0:
+            print("You have completed all the problems in the selected set. Re-picking from the entire problem set")
+            problems = pick_problems(user_data, problems=set(range(1,1700)), topic_list=args.topic_list, k=args.num_problems)
+        if len(problems) == 0:
+            print("Your --topic_list is either invalid or all completed. Repicking from all topics.")
+            problems = pick_problems(user_data, problems=problem_set, topic_list=topics.keys(), k=args.num_problems)
 
         valid_inputs = ["info", "hint", "easy", "hard", "quit", "pause", "break"]
         print(f"Other valid inputs: {', '.join(valid_inputs)}")
