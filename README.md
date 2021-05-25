@@ -27,9 +27,9 @@ During my leetcode journey, I discovered the answer to "which problems should I 
 note: no topic or list will result in a problem randomly being selected
 ```
 
-```python lcpp.py problem_num```
-
-Displays information about a specific problem: Name, difficulty, Acceptance rate, and a score related to how many companies ask it (last part is a TODO)
+```python lcpp.py --info 91```
+![info usage](https://i.ibb.co/z7ndhVQ/Screen-Shot-2021-05-25-at-4-06-30-PM.png)
+Displays information about a specific problem: Name, difficulty, Acceptance rate, and companies that ask it
 
 ## Interactive Mode:
 This mode selects and displays a single problem and waits for input:
@@ -50,14 +50,14 @@ quit                stop the program
 ## Completed Problems (optional/recommended):
 To maximize this program, you need to maintain a list of completed problems. This can be done in the following ways:
 1. interactive mode: After completion of each assigned problem, the result is appended to completed.csv.
-2. completed.txt: Best if you have a history of solving leetcode problems. The file expects a comma-delimited list of problem numbers e.g. ```78,5,13,1337```
-```
-To quickly populate with leetcode data:
-- Login to leetcode and visit [your list of solved problems](https://leetcode.com/problemset/all/?status=Solved). Select "All" rows per page in the bottom-left dropdown.
-- Open up Developer Tools (F12) and run this line in your Console tab:
-console.log(Array.from(document.querySelectorAll('.reactable-data tr td[label="#"]')).map(x => x.textContent).toString())
-- Copy the list and save into completed.txt
-```
+2. completed.txt: Best if you have a history of solving leetcode problems. The file expects a comma-delimited list of problem numbers e.g. ```78,5,42,1337```
+   To quickly populate with leetcode data:
+
+* Login to leetcode and visit [your list of solved problems](https://leetcode.com/problemset/all/?status=Solved). Select "All" rows per page in the bottom-left dropdown.
+* Open up Developer Tools (F12) and run this line in your Console tab:
+  ```console.log(Array.from(document.querySelectorAll('.reactable-data tr td[label="#"]')).map(x => x.textContent).toString())```
+* Copy the list and save into completed.txt
+
 3. completed.csv: The file that interactive mode writes to. Provides details about attempt. One problem per line
 Expected format: ```LC number,was solved,[num_errors],[time],[date]```
 ```
