@@ -40,7 +40,8 @@ def pick_problems(user_data, problems, topic_list, k=5, problem_type=ProblemType
     for maybe_skip in ['hard', 'revisit', 'refresh']:
         skip_set.update(user_data[maybe_skip] if maybe_skip not in args.list else [])
 
-    problem_set = (set(problems) & selected_topics) - skip_set
+    problem_set = (set(problems) & selected_topics & set(int(key) for key in all_problems.keys())) - skip_set
+    #print(problem_set)
     if problem_type==ProblemType.Random:
         return random.sample(list(problem_set), min(len(problem_set),k))
     return []
@@ -56,6 +57,14 @@ def mark_problem(user_data, mark_type, leetcode_id):
     with open('user.json', 'w') as f:
         f.write(re.sub(r',\n    ', ',', json.dumps(user_data, indent=2)))
 
+def print_info(all_problems, problem_to_companies, my_companies, leetcode_id):
+    problem = all_problems[str(leetcode_id)]
+    difficulty_string = "medium difficulty" if problem['Difficulty'] == "Medium" else "considered easy" if problem['Difficulty'] == 'Easy' else problem['Difficulty']
+    print(f"{leetcode_id} {problem['Name']} is {difficulty_string}: {problem['Acceptance']} of submissions pass")
+    company_list = my_companies & set(problem_to_companies[str(leetcode_id)])
+    company_list_string = f"including: {', '.join(company_list)}" if len(company_list) > 0 else f"including: {','.join(problem_to_companies[str(leetcode_id)][:5])}"
+    print(f"{len(company_list)} companies have asked this question {company_list_string}")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="",
@@ -68,6 +77,7 @@ if __name__ == "__main__":
                              'array hash table ll greedy backtrack graph etc')
     parser.add_argument('--list', '-l', nargs='+', default=['blind75'], help="Companies interested in (or file(s) containing comma-delimited problems)")
     parser.add_argument('--num_problems', '-k', type=int, default=5, help="Determine number of problems to solve")
+    parser.add_argument('--info', action='store', type=int, help="Get details on a problem ID")
 
     args = parser.parse_args()
 
@@ -96,7 +106,10 @@ if __name__ == "__main__":
             # load from file
             problem_set.update(user_data[elem.lower()])
 
-    if args.interactive:
+    print_info_func = lambda id: print_info(all_problems, problem_to_companies, my_companies, id)
+    if args.info:
+        print_info_func(args.info)
+    elif args.interactive:
         problems = pick_problems(user_data, problems=problem_set, topic_list=args.topic_list, k=args.num_problems)
         problem_set -= set(problems)
 
@@ -106,6 +119,8 @@ if __name__ == "__main__":
         if len(problems) == 0:
             print("Your --topic_list is either invalid or all completed. Repicking from all topics.")
             problems = pick_problems(user_data, problems=problem_set, topic_list=topics.keys(), k=args.num_problems)
+        if len(problems) == 0:
+            problems = pick_problems(user_data, problems=set(range(1,1700)), topic_list=topics.keys(), k=args.num_problems)
 
         valid_inputs = ["info", "hint", "easy", "hard", "quit", "pause", "break"]
         print(f"Other valid inputs: {', '.join(valid_inputs)}")
@@ -123,6 +138,7 @@ if __name__ == "__main__":
                     # TODO need problem to topic dictionary
                     raise Exception("Not Implemented Yet")
                 elif inp == 'info':
+                    print_info_func(leetcode_id)
                     difficulty_string = "medium difficulty" if problem['Difficulty'] == "Medium" else "considered easy" if problem['Difficulty'] == 'Easy' else problem['Difficulty']
                     print(f"{leetcode_id} {problem['Name']} is {difficulty_string}: {problem['Acceptance']} of submissions pass")
                     company_list = my_companies & set(problem_to_companies[str(leetcode_id)])
@@ -152,8 +168,11 @@ if __name__ == "__main__":
                     # TODO pick problem with same topic and higher acceptance rate (if possible). If none, default to above line
                     start_time = timer()
                 elif inp == 'skip':
-                    leetcode_id = pick_problems(user_data, problems=problem_set, topic_list=args.topic_list, k=1)[0]
-                    start_time = timer()
+                    try:
+                        leetcode_id = pick_problems(user_data, problems=problem_set, topic_list=args.topic_list, k=1)[0]
+                        start_time = timer()
+                    except IndexError:
+                        break
                 elif inp.startswith('revisit'):
                     marked_id = int(inp.split(' ')[1]) if len(inp.split(' ')) > 0 else leetcode_id
                     mark_problem(user_data, 'revisit', marked_id)
